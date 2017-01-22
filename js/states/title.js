@@ -11,6 +11,10 @@ Main.Title.prototype.create = function() {
   var logo = this.add.sprite(this.world.centerX, this.world.centerY, 'logo');
   logo.anchor.setTo(0.5, 0.5);
 
+  this.add.text( 30, this.world.centerY + 100, "Programmer: Chris Mayfield", {font:"50px Arial", fill: "#FFFFFF"});
+  this.add.text( 30, this.world.centerY + 170, "Programmer: Mike Clubb", {font:"50px Arial", fill: "#FFFFFF"});
+  this.add.text( 30, this.world.centerY + 240, "Artist: Vihar Pchelarov", {font:"50px Arial", fill: "#FFFFFF"});
+
   this.setupConsole();
 }
 
