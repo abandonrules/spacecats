@@ -100,12 +100,46 @@ Main.Play.prototype.setupConsole = function(){
   }
 
   Main.airconsole.onMessage = function(device_id, data) {
+       console.log(data);
     if( data ) {
       if( data.message === "TITLE" && data.action === 'START') {
         that.start();
       }
-    }
-  }
+       if( data["joystick-left"] )
+       {
+         if( data["joystick-left"].pressed )
+         {
+           var jlX = data["joystick-left"].message.x;
+           var jlY = data["joystick-left"].message.y;
+           if( jlX < 0 )
+           {
+             players[device_id].body.moveLeft(Math.abs(jlX) * 400);
+           } else if( jlX > 0 )
+           {
+             players[device_id].body.moveRight(Math.abs(jlX) * 400);
+           }
+ 
+           if( jlY < 0 )
+           {
+             players[device_id].body.moveUp(Math.abs(jlY) * 400);
+           } else if( jlY > 0 )
+           {
+             players[device_id].body.moveDown(Math.abs(jlY) * 400);
+           }
+ 
+         }
+       }
+ 
+       if( data['joystick-right'] && data['joystick-right'].pressed )
+       {
+         fire_bullet(device_id,data['joystick-right'].message.x,data['joystick-right'].message.y);
+         }
+       if (data.Poop && data.Poop.pressed)
+       {
+         poop(device_id);
+       }
+     };
+
 }
 
 Main.Play.prototype.start = function(){
