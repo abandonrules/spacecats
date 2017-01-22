@@ -73,12 +73,6 @@
 <script type="text/javascript" src="airconsole-controls/swipe-analog/swipe-analog.js"></script>
 <script type="text/javascript" src="airconsole-controls/swipe-pattern/swipe-pattern.js"></script>
 <script type="text/javascript" src="airconsole-controls/ctrl-generator/ctrl-generator.js"></script>
-<script type="text/javascript">
-
-CtrlGenerator.setAirConsole(ac);
-CtrlGenerator.generate({"left":{"type":{"label":"Joystick","class_name":"Joystick"}},"middle":[{"label":"Poop","key":"Poop"}],"right":{"type":{"label":"Joystick","class_name":"Joystick"}}});
-
-</script>
 
 <style>
 .ggButton {
@@ -153,6 +147,8 @@ span {
 
 <script>
 var ac = new AirConsole({orientation: AirConsole.ORIENTATION_LANDSCAPE});
+CtrlGenerator.setAirConsole(ac);
+CtrlGenerator.generate({"left":{"type":{"label":"Joystick","class_name":"Joystick"}},"middle":[{"label":"Poop","key":"Poop"}],"right":{"type":{"label":"Joystick","class_name":"Joystick"}}});
 
 function hideViews() {
   $("#view-0").hide();
