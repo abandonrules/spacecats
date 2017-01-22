@@ -10,6 +10,10 @@ Main.Play = function(game)
   this.deadcats= 0;
   this.gracepts = 25;
   this.grace = 0;
+  this.playersCollisionGroup;// = this.game.physics.p2.createCollisionGroup();
+  this.planetsCollisionGroup;// = this.game.physics.p2.createCollisionGroup();
+  this.bulletsCollisionGroup;// = this.game.physics.p2.createCollisionGroup();
+  this.hairCollisionGroup;// = this.game.physics.p2.createCollisionGroup();
 }
 
 Main.Play.prototype.preload = function(){
@@ -30,10 +34,10 @@ Main.Play.prototype.preload = function(){
 
 Main.Play.prototype.create = function(){
   Main.airconsole.broadcast({'message': 'STATE', 'state':'PLAY'});
-  var playersCollisionGroup = this.game.physics.p2.createCollisionGroup();
-  var planetsCollisionGroup = this.game.physics.p2.createCollisionGroup();
-  var bulletsCollisionGroup = this.game.physics.p2.createCollisionGroup();
-  var hairCollisionGroup = this.game.physics.p2.createCollisionGroup();
+   this.playersCollisionGroup = this.game.physics.p2.createCollisionGroup();
+   this.planetsCollisionGroup = this.game.physics.p2.createCollisionGroup();
+   this.bulletsCollisionGroup = this.game.physics.p2.createCollisionGroup();
+   this.hairCollisionGroup = this.game.physics.p2.createCollisionGroup();
 
   // Checks all objects  for world border
   this.game.physics.p2.updateBoundsCollisionGroup();
@@ -50,10 +54,10 @@ Main.Play.prototype.create = function(){
   bullets.createMultiple(20, "bullet",[0, 1, 2, 3]);
 
   for( var i = 0; i < bullets.children.length; i++ ) {
-    bullets.children[i].body.setCollisionGroup(bulletsCollisionGroup);
-    bullets.children[i].body.collides([planetsCollisionGroup, bulletsCollisionGroup], bulletHit, this);
+    bullets.children[i].body.setCollisionGroup(this.bulletsCollisionGroup);
+    bullets.children[i].body.collides([this.planetsCollisionGroup, this.bulletsCollisionGroup], this.bulletHit, this);
   }
-  bullets.callAll('events.onOutOfBounds.add', 'events.onOutOfBounds', resetBullet);
+  bullets.callAll('events.onOutOfBounds.add', 'events.onOutOfBounds', this.resetBullet);
   bullets.callAll('anchor.setTo', 'anchor', 0.5, 1.0);
   bullets.setAll('checkWorldBounds', true);
   bullets.setAll('lifeSpan', 1);
@@ -73,16 +77,23 @@ Main.Play.prototype.create = function(){
     planet.body.setRectangle(40, 40);
     planet.setHealth(10);
     planet.body.setZeroVelocity();
-    planet.body.setCollisionGroup(planetsCollisionGroup);
-    planet.body.collides([planetsCollisionGroup, playersCollisionGroup, bulletsCollisionGroup]);
+    planet.body.setCollisionGroup(this.planetsCollisionGroup);
+    planet.body.collides([this.planetsCollisionGroup,this.playersCollisionGroup, this.bulletsCollisionGroup]);
   }
 
   this.game.world.setBounds(0, 0, window.innerWidth, window.innerHeight);
+  this.setupConsole();
   this.getCurrentConnectedDevicesAndCreatePlayers();
 }
 
 Main.Play.prototype.render = function(){
-  this.game.debug.text("Players connected: " + players.length, 32, 32);
+  this.game.debug.text("Players connected: " + this.players.length, 32, 32);
+  var that = this;
+  $(this.players).each(function(){
+    var player = this;
+    if( player.sprite)
+    console.log(player.sprite.x);
+  });
 }
 
 Main.Play.prototype.setupConsole = function(){
@@ -111,20 +122,20 @@ Main.Play.prototype.setupConsole = function(){
           var jlY = data["joystick-left"].message.y;
           if( jlX < 0 )
           {
-            players[device_id].body.moveLeft(Math.abs(jlX) * 400);
+            that.players[device_id].sprite.body.moveLeft(Math.abs(jlX) * 400);
           }
           else if( jlX > 0 )
           {
-            players[device_id].body.moveRight(Math.abs(jlX) * 400);
+            that.players[device_id].sprite.body.moveRight(Math.abs(jlX) * 400);
           }
 
           if( jlY < 0 )
           {
-            players[device_id].body.moveUp(Math.abs(jlY) * 400);
+            that.players[device_id].sprite.body.moveUp(Math.abs(jlY) * 400);
           }
           else if( jlY > 0 )
           {
-            players[device_id].body.moveDown(Math.abs(jlY) * 400);
+            that.players[device_id].sprite.body.moveDown(Math.abs(jlY) * 400);
           }
 
         }
@@ -132,16 +143,18 @@ Main.Play.prototype.setupConsole = function(){
 
       if( data['joystick-right'] && data['joystick-right'].pressed )
       {
-        fire_bullet(device_id, data['joystick-right'].message.x, data['joystick-right'].message.y);
+        that.fire_bullet(device_id, data['joystick-right'].message.x, data['joystick-right'].message.y);
       }
       if (data.Poop && data.Poop.pressed)
       {
-        poop(device_id);
+        that.poop(device_id);
       }
   }
 }
+}
 
-Main.Play.prototype.start = function(){
+Main.Play.prototype.start = function()
+{
   this.state.start('leaderboard');
 }
 
@@ -150,14 +163,14 @@ Main.Play.prototype.getCurrentConnectedDevicesAndCreatePlayers = function()
   Main.airconsole.setActivePlayers(8);
   devices = Main.airconsole.getControllerDeviceIds();
 
-
   // Setup the devices to users
   for(var i = 0; i < devices.length; i++){
     var device = devices[i];
 
     var playerid = Main.airconsole.convertDeviceIdToPlayerNumber(device);
-    var player = new Player(this.game, playerid, null, null)
-    this.players.push(player);
+    var player = new Player(this.game, device, this.playersCollisionGroup, [this.planetsCollisionGroup, this.playersCollisionGroup, this.bulletsCollisionGroup])
+    //this.players.push(player);
+    this.players[device] = player;
   }
 }
 
@@ -172,32 +185,35 @@ Main.Play.prototype.sendPlayers = function(device_id)
   });
 
   if( device_id )
+  {
     airconsole.message(device_id, {'message':'Players', 'names': names});
+  }
   else
+  {
     airconsole.broadcast({'message':'Players', 'names': names});
-
+  }
 }
 
-Main.Play.prototype.poop = function (device_id)
+Main.Play.prototype.poop = function(device_id)
 {
-  players[device_id].damage(25);
-  var hair = planets.create(players[device_id].x, players[device_id].y, 'hair');
+  this.players[device_id].sprite.damage(25);
+  var hair = planets.create(this.players[device_id].sprite.x, this.players[device_id].sprite.y, 'hair');
   hair.body.setRectangle(10, 10);
   hair.scale.setTo(0.5,0.5);
   hair.setHealth(10);
   hair.body.setZeroVelocity();
-  hair.body.setCollisionGroup(hairCollisionGroup);
-  hair.body.collides([planetsCollisionGroup, hairCollisionGroup], playerHit, this);
+  hair.body.setCollisionGroup(this.hairCollisionGroup);
+  hair.body.collides([this.planetsCollisionGroup, this.hairCollisionGroup], this.playerHit, this);
 }
 
-Main.Play.prototype.fire_bullet = function (device_id,jrX,jrY)
+Main.Play.prototype.fire_bullet = function(device_id,jrX,jrY)
 {
   var bullet = bullets.getFirstExists(false);
 
   if( bullet)
   {
     console.log("Bullet X: " + jrX + ": Bully Y: " + jrY);
-    bullet.reset(players[device_id].x + 30, players[device_id].y - 30);
+    bullet.reset(this.players[device_id].sprite.x + 30, this.players[device_id].sprite.y - 30);
     bullet.body.velocity.x = 500 * jrX;
     bullet.body.velocity.y = 500 * jrY;
 
@@ -205,7 +221,8 @@ Main.Play.prototype.fire_bullet = function (device_id,jrX,jrY)
     {
       bullet.scale.x *= -1;
     }
-    else {
+    else
+    {
       bullet.scale.x = 1;
     }
   }
@@ -221,35 +238,7 @@ Main.Play.prototype.bulletHit = function(body1, body2)
   body1.sprite.kill();
 }
 
-Main.Play.prototype.playerHit = function (body1, body2)
+Main.Play.prototype.playerHit = function(body1, body2)
 {
-  if ( grace > gracepts )
-  {
-    body1.damage -= 25;
-    body2.damage -= 25;
-    body1.sprite.alpha -= 0.2;
-    body2.sprite.alpha -= 0.2;
-    body2.setZeroVelocity();
-    if (body1.sprite.alpha < 0 )
-    {
-      body1.sprite.kill();
-      if (cat_num = deadcats )
-      {
-        enableLogo();
-      }
-      else {
-          deadcats++;
-      }
-      if (body2.sprite.alpha < 0 )
-      {
-          body2.sprite.kill();
-      }
-      if( body2.sprite.name == 'rock')
-      {
-        body2.sprite.body.setZeroVelocity();
-      }
-    }
-    else {
-      grace++;
-    }
+
 }

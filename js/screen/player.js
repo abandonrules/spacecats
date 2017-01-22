@@ -1,5 +1,7 @@
 Player = function(game, playerid, collisionGroups, collidesWith )
 {
+  this.grace = 0;
+  this.gracepts = 25;
   this.name = "Anonymous";
   this.playerid = playerid;
   var x = game.world.randomX;
@@ -21,10 +23,40 @@ Player = function(game, playerid, collisionGroups, collidesWith )
     this.sprite.body.setCollisionGroup(collisionGroups);
 
   if( collidesWith)
-    this.sprite.body.collides(collidesWith, playerHit, this);
+    this.sprite.body.collides(collidesWith, this.playerHit, this);
 };
 
 Player.prototype.playerHit = function(body1, body2)
 {
-
+  if ( this.grace > this.gracepts )
+  {
+    body1.damage -= 25;
+    body2.damage -= 25;
+    body1.sprite.alpha -= 0.2;
+    body2.sprite.alpha -= 0.2;
+    body2.setZeroVelocity();
+    if (body1.sprite.alpha < 0 )
+    {
+      body1.sprite.kill();
+      if (cat_num = deadcats )
+      {
+        enableLogo();
+      }
+      else {
+          deadcats++;
+      }
+      if (body2.sprite.alpha < 0 )
+      {
+          body2.sprite.kill();
+      }
+      if( body2.sprite.name == 'rock')
+      {
+        body2.sprite.body.setZeroVelocity();
+      }
+    }
+  }
+  else
+  {
+    this.grace++;
+  }
 };
