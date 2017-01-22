@@ -19,7 +19,7 @@ Main.Title.prototype.setupConsole = function() {
 
   Main.airconsole.onConnect = function(device_id) {
     console.log("Client Connected");
-    Main.airconsole.broadcast({'message': 'STATE', 'state':'TITLE'});
+    Main.airconsole.message(device_id, {'message': 'STATE', 'state':'TITLE'});
   }
 
   Main.airconsole.onDisconnect = function(device_id) {

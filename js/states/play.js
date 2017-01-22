@@ -90,7 +90,7 @@ Main.Play.prototype.setupConsole = function(){
 
   Main.airconsole.onConnect = function(device_id) {
     console.log("Client Connected");
-
+    Main.airconsole.message(device_id, {'message': 'STATE', 'state':'PLAY'});
   }
 
   Main.airconsole.onDisconnect = function(device_id) {
