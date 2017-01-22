@@ -23,7 +23,7 @@ Main.Lobby.prototype.create = function() {
   this.PlacePlayersOnScreen();
 }
 Main.Lobby.prototype.start = function() {
-  this.state.start('play')
+  this.state.start('playgame')
 }
 Main.Lobby.prototype.setupConsole = function() {
   var that = this;
@@ -43,9 +43,6 @@ Main.Lobby.prototype.setupConsole = function() {
     if( data ) {
       console.log(data);
       if( data.message === "LOBBY" && data.action === 'START') {
-
-        // Need to check to see if there are 2 or more ActivePlayers
-
         that.start();
       }
 
@@ -60,12 +57,12 @@ Main.Lobby.prototype.getCurrentConnectedDevicesAndCreatePlayers = function()
 {
   Main.airconsole.setActivePlayers(8);
   devices = Main.airconsole.getControllerDeviceIds();
-  console.log("Devices", devices);
+
 
   // Setup the devices to users
   for(var i = 0; i < devices.length; i++){
     var device = devices[i];
-    console.log(device);
+
     var playerid = Main.airconsole.convertDeviceIdToPlayerNumber(device);
     console.log(playerid);
     var player = new Player(this.game, playerid, null, null)

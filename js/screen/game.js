@@ -14,7 +14,7 @@
     game.state.add('boot', Main.Boot);
     game.state.add('title', Main.Title);
     game.state.add('lobby', Main.Lobby);
-    game.state.add('play', Main.Play);
+    game.state.add('playgame', Main.Play);
     game.state.add('leaderboard', Main.Leaderboard);
 
     game.state.start('boot');

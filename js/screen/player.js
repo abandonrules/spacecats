@@ -7,7 +7,8 @@ Player = function(game, playerid, collisionGroups, collidesWith )
   this.sprite = game.add.sprite(x, y, 'cat1');
   if( this.playerid)
   {
-    this.playerText = this.add.text(x, y - 30, "Player " + this.playerid, {font:'32px Arial', fill:'#ffffff'});
+    var pText = "Player " + playerid;
+    this.playerText = game.add.text(x, y - 30, pText, {font:'32px Arial', fill:'#ffffff'});
     game.physics.p2.enable(this.playerText, false);
   }
   game.physics.p2.enable(this.sprite, false);

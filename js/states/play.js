@@ -1,4 +1,4 @@
-var Main = Main || {}
+var Main = Main || {};
 Main.Play = function(game)
 {
   this.space;
@@ -72,15 +72,13 @@ Main.Play.prototype.create = function(){
     var planet = planets.create(x, y, 'rock');
     planet.body.setRectangle(40, 40);
     planet.setHealth(10);
-    //planet.body.immovable = true;
-    //planet.body.moves = false;
-    //planet.angle = game.rnd.angle();
     planet.body.setZeroVelocity();
     planet.body.setCollisionGroup(planetsCollisionGroup);
     planet.body.collides([planetsCollisionGroup, playersCollisionGroup, bulletsCollisionGroup]);
   }
 
   this.game.world.setBounds(0, 0, window.innerWidth, window.innerHeight);
+  this.getCurrentConnectedDevicesAndCreatePlayers();
 }
 
 Main.Play.prototype.render = function(){
@@ -100,65 +98,70 @@ Main.Play.prototype.setupConsole = function(){
   }
 
   Main.airconsole.onMessage = function(device_id, data) {
-       console.log(data);
+    console.log(data);
     if( data ) {
       if( data.message === "TITLE" && data.action === 'START') {
         that.start();
       }
-       if( data["joystick-left"] )
-       {
-         if( data["joystick-left"].pressed )
-         {
-           var jlX = data["joystick-left"].message.x;
-           var jlY = data["joystick-left"].message.y;
-           if( jlX < 0 )
-           {
-             players[device_id].body.moveLeft(Math.abs(jlX) * 400);
-           } else if( jlX > 0 )
-           {
-             players[device_id].body.moveRight(Math.abs(jlX) * 400);
-           }
- 
-           if( jlY < 0 )
-           {
-             players[device_id].body.moveUp(Math.abs(jlY) * 400);
-           } else if( jlY > 0 )
-           {
-             players[device_id].body.moveDown(Math.abs(jlY) * 400);
-           }
- 
-         }
-       }
- 
-       if( data['joystick-right'] && data['joystick-right'].pressed )
-       {
-         fire_bullet(device_id,data['joystick-right'].message.x,data['joystick-right'].message.y);
-         }
-       if (data.Poop && data.Poop.pressed)
-       {
-         poop(device_id);
-       }
-     };
+      if( data["joystick-left"] )
+      {
+        if( data["joystick-left"].pressed )
+        {
+          var jlX = data["joystick-left"].message.x;
+          var jlY = data["joystick-left"].message.y;
+          if( jlX < 0 )
+          {
+            players[device_id].body.moveLeft(Math.abs(jlX) * 400);
+          }
+          else if( jlX > 0 )
+          {
+            players[device_id].body.moveRight(Math.abs(jlX) * 400);
+          }
 
+          if( jlY < 0 )
+          {
+            players[device_id].body.moveUp(Math.abs(jlY) * 400);
+          }
+          else if( jlY > 0 )
+          {
+            players[device_id].body.moveDown(Math.abs(jlY) * 400);
+          }
+
+        }
+      }
+
+      if( data['joystick-right'] && data['joystick-right'].pressed )
+      {
+        fire_bullet(device_id, data['joystick-right'].message.x, data['joystick-right'].message.y);
+      }
+      if (data.Poop && data.Poop.pressed)
+      {
+        poop(device_id);
+      }
+  }
 }
 
 Main.Play.prototype.start = function(){
   this.state.start('leaderboard');
 }
 
-
-
-
-
-function PlayerJoinGame(device_id, data)
+Main.Play.prototype.getCurrentConnectedDevicesAndCreatePlayers = function()
 {
-  var player = new Player(game, device_id, playersCollisionGroup, [planetsCollisionGroup, playersCollisionGroup, bulletsCollisionGroup]);
-  player.name = data.name;
-  players[device_id] = player;
-  sendPlayers();
+  Main.airconsole.setActivePlayers(8);
+  devices = Main.airconsole.getControllerDeviceIds();
+
+
+  // Setup the devices to users
+  for(var i = 0; i < devices.length; i++){
+    var device = devices[i];
+
+    var playerid = Main.airconsole.convertDeviceIdToPlayerNumber(device);
+    var player = new Player(this.game, playerid, null, null)
+    this.players.push(player);
+  }
 }
 
-function sendPlayers(device_id)
+Main.Play.prototype.sendPlayers = function(device_id)
 {
   var names = [];
   $(players).each(function() {
@@ -170,31 +173,29 @@ function sendPlayers(device_id)
 
   if( device_id )
     airconsole.message(device_id, {'message':'Players', 'names': names});
-  else {
+  else
     airconsole.broadcast({'message':'Players', 'names': names});
-  }
+
 }
 
-function poop(device_id)
+Main.Play.prototype.poop = function (device_id)
 {
   players[device_id].damage(25);
   var hair = planets.create(players[device_id].x, players[device_id].y, 'hair');
   hair.body.setRectangle(10, 10);
   hair.scale.setTo(0.5,0.5);
   hair.setHealth(10);
-  //planet.angle = game.rnd.angle();
   hair.body.setZeroVelocity();
   hair.body.setCollisionGroup(hairCollisionGroup);
   hair.body.collides([planetsCollisionGroup, hairCollisionGroup], playerHit, this);
-
 }
-function fire_bullet(device_id,jrX,jrY)
+
+Main.Play.prototype.fire_bullet = function (device_id,jrX,jrY)
 {
   var bullet = bullets.getFirstExists(false);
 
   if( bullet)
   {
-
     console.log("Bullet X: " + jrX + ": Bully Y: " + jrY);
     bullet.reset(players[device_id].x + 30, players[device_id].y - 30);
     bullet.body.velocity.x = 500 * jrX;
@@ -209,51 +210,46 @@ function fire_bullet(device_id,jrX,jrY)
     }
   }
 }
-function enableLogo()
-{
-  logo = game.add.sprite(300, 200, 'logo');
-  logo.fixedToCamera = true;
-  game.camera.deadzone = new Phaser.Rectangle(150, 150, 500, 300);
-  game.camera.focusOnXY(0, 0);
-}
 
-function resetBullet(bullet)
+Main.Play.prototype.resetBullet = function(bullet)
 {
   bullet.kill();
 }
 
-function bulletHit(body1, body2)
+Main.Play.prototype.bulletHit = function(body1, body2)
 {
   body1.sprite.kill();
 }
 
-function playerHit(body1, body2)
+Main.Play.prototype.playerHit = function (body1, body2)
 {
   if ( grace > gracepts )
   {
-  body1.damage -= 25;
-  body2.damage -= 25;
-  body1.sprite.alpha -= 0.2;
-  body2.sprite.alpha -= 0.2;
-  body2.setZeroVelocity();
-  if (body1.sprite.alpha < 0 )
+    body1.damage -= 25;
+    body2.damage -= 25;
+    body1.sprite.alpha -= 0.2;
+    body2.sprite.alpha -= 0.2;
+    body2.setZeroVelocity();
+    if (body1.sprite.alpha < 0 )
     {
-    body1.sprite.kill();
-    if (cat_num = deadcats )
-      enableLogo();
-      else
-        deadcats++;
+      body1.sprite.kill();
+      if (cat_num = deadcats )
+      {
+        enableLogo();
+      }
+      else {
+          deadcats++;
+      }
+      if (body2.sprite.alpha < 0 )
+      {
+          body2.sprite.kill();
+      }
+      if( body2.sprite.name == 'rock')
+      {
+        body2.sprite.body.setZeroVelocity();
+      }
     }
-  if (body2.sprite.alpha < 0 )
-    body2.sprite.kill();
-
-  if( body2.sprite.name == 'rock')
-  {
-    body2.sprite.body.setZeroVelocity();
-  }
-
-}
-  else {
-    grace++;
-  }
+    else {
+      grace++;
+    }
 }
