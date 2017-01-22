@@ -72,6 +72,8 @@ Main.Play.prototype.create = function(){
     var planet = planets.create(x, y, 'rock');
     planet.body.setRectangle(40, 40);
     planet.setHealth(10);
+    //planet.body.immovable = true;
+    //planet.body.moves = false;
     //planet.angle = game.rnd.angle();
     planet.body.setZeroVelocity();
     planet.body.setCollisionGroup(planetsCollisionGroup);
